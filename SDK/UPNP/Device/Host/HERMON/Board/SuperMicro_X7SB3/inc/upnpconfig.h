@@ -1,0 +1,47 @@
+
+#ifndef UPNP_CONFIG_H
+#define UPNP_CONFIG_H
+
+
+
+
+#define UPNP_VERSION_STRING "1.3.1"
+
+#define UPNP_VERSION_MAJOR 1
+
+#define UPNP_VERSION_MINOR 3
+
+#define UPNP_VERSION_PATCH 1
+
+#define UPNP_VERSION	\
+  ((UPNP_VERSION_MAJOR*100 + UPNP_VERSION_MINOR)*100 + UPNP_VERSION_PATCH)
+
+
+
+
+
+
+
+
+
+
+
+
+#define UPNP_HAVE_CLIENT 1
+
+
+
+#define UPNP_HAVE_DEVICE 1
+
+
+
+#define UPNP_HAVE_WEBSERVER 1
+
+
+
+#define UPNP_HAVE_TOOLS 1
+
+
+#endif 
+
+

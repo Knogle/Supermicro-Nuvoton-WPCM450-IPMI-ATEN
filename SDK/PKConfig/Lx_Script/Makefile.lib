@@ -1,0 +1,62 @@
+FIND_PATH = $(shell grep -s ".*-y.*=.*" $(1) |sed -e "s/.*=//")
+
+ECHO = $(if $(shell echo -e "\n"),echo ,echo -e)
+
+define SDKPATH_CMD
+	@if [ ! -f .SDKPath ] ;then touch .SDKPath;else rm .SDKPath ;fi
+	@grep -s 'CONFIG_EXTRACT_PATH=' $(PRJ_PATH)/.config  | sed -e 's/CONFIG_EXTRACT_PATH=\"\(.*\)\"/EXTRPATH_tmp=\1/' >> $(PRJ_PATH)/.SDKPath
+	@$(ECHO) "EXTRPATH =\$$(strip \$$(shell cd \$$(PRJ_PATH);if [ ! -d \$$(PRJ_PATH)/\$$(EXTRPATH_tmp) ];then mkdir -p \$$(PRJ_PATH)/\$$(EXTRPATH_tmp); fi\
+	;cd \$$(PRJ_PATH);pwd ))" >> $(PRJ_PATH)/.SDKPath
+	@$(ECHO) "DTKPATH=\$$(shell cd \$$(EXTRPATH)/\$$(EXTRPATH_tmp);pwd)" >>$(PRJ_PATH)/.SDKPath
+	@$(ECHO) "SDKPATH=\$$(shell cd \$$(EXTRPATH)/\$$(EXTRPATH_tmp);pwd)" >>$(PRJ_PATH)/.SDKPath
+endef
+
+define ADD_SDKOBJ
+	export RANDOMNUM=$(shell expr  $$RANDOM + $$$$ );\
+	if [ ! -d $(OBJS_PATH) ];then mkdir -p  $(OBJS_PATH);fi;\
+	if [ ! -z $(subst ",,$(firstword $(4))) ];then \
+				if [  -n "$(1)" ];then \
+					cat $(PRJ_PATH)/PKConfig/Lx_SDK/$(MAKETEMPLATE) |sed -e "/all/i\EXECUTABLE = $(EXECUTABLE)" \
+					-e "/^OBJS.*=/i\OBJS-$$\($(4)\) = $(notdir $(2))" \
+					>> $(OBJS_PATH)/Makefile;\
+				else \
+					cat $(PRJ_PATH)/PKConfig/Lx_SDK/$(MAKETEMPLATE) |sed -e "/all/i\EXECUTABLE = $(EXECUTABLE)" \
+					-e "/^OBJS.*=/i\SOURCES-$$\($(CONFIGNAME)_$$RANDOMNUM\) = $(addsuffix .c, $(notdir $(basename $(2))))"\
+					-e "/^OBJS.*=/i\OBJS-$$\($(CONFIGNAME)_$$RANDOMNUM\) = $(notdir $(2))"\
+					>> $(OBJS_PATH)/Makefile;\
+				fi;\
+	else \
+		if [ -n "$(1)" ];then \
+			cat $(PRJ_PATH)/PKConfig/Lx_SDK/$(MAKETEMPLATE) |sed -e "/all/i\EXECUTABLE = $(EXECUTABLE)" \
+			-e "/^OBJS.*=/i\OBJS-y = $(notdir $(2))" \
+			>>$(OBJS_PATH)/Makefile;\
+		else \
+			cat $(PRJ_PATH)/PKConfig/Lx_SDK/$(MAKETEMPLATE) |sed -e "/all/i\EXECUTABLE = $(EXECUTABLE)" \
+			-e "/^OBJS.*=/i\SOURCES-y = $(addsuffix .c, $(notdir $(basename $(2))))" \
+			-e "/^OBJS.*=/i\OBJS-y = $(notdir $(2))"\
+			>>$(OBJS_PATH)/Makefile;\
+		fi;\
+	fi;\
+	if [ ! -z $(firstword $(if $(1),$(2))) ];then \
+		cp $(if $(1),$(2)) $(OBJS_PATH) ;\
+	else \
+			cp $(addsuffix .c,$(basename $(2))) $(OBJS_PATH);\
+			for i in $(addsuffix .c,$(basename $(2)));do (/bin/bash $(PRJ_PATH)/PKConfig/Lx_Script/IncSticPath.sh $(OBJS_PATH)/$$i);done;\
+			if [  -n "$(3)" ]; \
+			then \
+			for j in $(addsuffix .c,$(basename $(3))); \
+			do \
+				/bin/bash $(PRJ_PATH)/PKConfig/Lx_Script/ExtractHeader.sh $$j $(SDKPATH)/SDKFILES/DEFAULT/inc; \
+			done; \
+			for k in $(addsuffix .h,$(basename $(SDKPATH)/SDKFILES/DEFAULT/inc/*)); \
+			do \
+				/bin/bash $(PRJ_PATH)/PKConfig/Lx_Script/IncSticPath.sh $$k; \
+			done; \
+			fi; \
+	fi;\
+
+endef 
+
+define STRIPOBJS_INFOLDER 
+	$(Q)for i in $(shell ls -d $(1)); do if [ -f $$i ] ;then $(STRIP) -s $$i ;fi; done; 
+endef

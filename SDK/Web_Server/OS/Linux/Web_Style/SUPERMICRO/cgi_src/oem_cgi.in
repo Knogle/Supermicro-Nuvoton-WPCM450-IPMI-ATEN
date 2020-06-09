@@ -1,0 +1,7 @@
+OEM_CGI_SRC = oem_firmware_update.c oem_firmware_upload.c Build_jnlp.c Build_SOL_jnlp.c
+PRJ_CGI_SRC = $(addprefix $(WEB_STYLE_PATH)/cgi_src/, $(OEM_CGI_SRC))
+
+ifeq ($(CONFIG_PLATFORM_SUPERMICRO_SUBVERSION_X8DTT),y)
+OEM_SUB_BOARD_CGI_SRC = login_oem.c replace_sdr.c
+PRJ_CGI_SRC += $(addprefix $(WEB_STYLE_PATH)/cgi_src/$(SUBBOARD)/, $(OEM_SUB_BOARD_CGI_SRC))
+endif
